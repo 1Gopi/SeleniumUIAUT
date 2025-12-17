@@ -1,0 +1,41 @@
+version: "3"
+services:
+  # 1. The Manager (Hub)
+  selenium-hub:
+    image: selenium/hub:latest
+    container_name: selenium-hub
+    ports:
+      - "4444:4444" # Expose port so we can see the Grid UI
+
+  # 2. The Worker (Chrome)
+  chrome-node:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  # 3. The Worker (Firefox) - Just to show off multi-browser support!
+  firefox-node:
+    image: selenium/node-firefox:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  # 4. Your Framework (The Test Runner)
+  test-framework:
+    build: .  # Build the Dockerfile in the current directory
+    image: my-automation-framework
+    container_name: test-runner
+    depends_on:
+      - selenium-hub
+      - chrome-node
+    # CRITICAL: We override the entrypoint to pass the 'remote' flag
+    command: mvn clean test -Denv=remote -Dbrowser=chrome
+    environment:
+      - SE_HUB_HOST=selenium-hub

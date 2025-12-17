@@ -4,11 +4,26 @@ FROM maven:3.9.6-eclipse-temurin-21
 
 # 2. Install Google Chrome (The browser needed for testing)
 # (Linux commands to download and install Chrome)
-RUN apt-get update && apt-get install -y wget gnupg2 && \
-    wget -q -O - https://dl-google.com/linux/linux_signing_key.pub | apt-key add - && \
-    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
-    apt-get update && apt-get install -y google-chrome-stable
+#RUN apt-get update && apt-get install -y wget gnupg2 && \
+#    wget -q -O - https://dl-google.com/linux/linux_signing_key.pub | apt-key add - && \
+#    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
+#    apt-get update && apt-get install -y google-chrome-stable
 
+# 2. Install Google Chrome (The browser needed for testing)
+# Added 'ca-certificates' to fix the SSL download error
+#RUN apt-get update && apt-get install -y wget gnupg2 ca-certificates && \
+#    wget -q -O - https://dl-google.com/linux/linux_signing_key.pub | apt-key add - && \
+#    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
+#    apt-get update && apt-get install -y google-chrome-stable
+
+	# 2. Install Google Chrome (Direct Download Method)
+	# This bypasses the GPG Key error by installing the .deb file directly
+	RUN apt-get update && apt-get install -y wget && \
+	    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+	    apt-get install -y ./google-chrome-stable_current_amd64.deb && \
+	    rm google-chrome-stable_current_amd64.deb && \
+	    apt-get clean
+	
 # 3. Set the working directory inside the container
 WORKDIR /app
 
