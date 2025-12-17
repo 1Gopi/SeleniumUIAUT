@@ -2,6 +2,7 @@ package com.framework.core;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.annotations.AfterMethod;
@@ -21,8 +22,18 @@ public class BaseTest {
         // 1. Launch Browser
     	String browser = ConfigReader.getProperty("browser");
     	switch(browser) {
-    	case "chrome": driver = new ChromeDriver();
-    					break;
+    	case "chrome": ChromeOptions options = new ChromeOptions();
+        	// Check if we passed 'headless=true' from Maven/Jenkins
+        	if ("true".equalsIgnoreCase(System.getProperty("headless"))) {
+        		options.addArguments("--headless");
+        		options.addArguments("--disable-gpu");
+        		options.addArguments("--window-size=1920,1080");
+        		options.addArguments("--no-sandbox"); // Critical for Docker security models
+        		options.addArguments("--disable-dev-shm-usage"); // Critical for Docker memory
+        	}
+        	driver = new ChromeDriver(options);
+        	break;
+    				
     	case "edge" : driver = new EdgeDriver();
     				  break;
     	case "firefox": driver = new FirefoxDriver();

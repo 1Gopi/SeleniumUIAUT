@@ -1,0 +1,23 @@
+# 1. Use an official image that has Maven and Java pre-installed
+# (This is our base OS)
+FROM maven:3.9.6-eclipse-temurin-21
+
+# 2. Install Google Chrome (The browser needed for testing)
+# (Linux commands to download and install Chrome)
+RUN apt-get update && apt-get install -y wget gnupg2 && \
+    wget -q -O - https://dl-google.com/linux/linux_signing_key.pub | apt-key add - && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
+    apt-get update && apt-get install -y google-chrome-stable
+
+# 3. Set the working directory inside the container
+WORKDIR /app
+
+# 4. Copy the Project Files into the container
+# (Copying pom.xml first allows Docker to cache dependencies)
+COPY pom.xml .
+COPY src ./src
+COPY testng.xml .
+
+# 5. Define the command to run when the container starts
+# (Notice we force headless mode here!)
+ENTRYPOINT ["mvn", "clean", "test", "-Dheadless=true"]
